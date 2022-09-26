@@ -4,6 +4,7 @@ using SalesWebMVC.Models;
 using SalesWebMVC.Services.Exceptions;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SalesWebMVC.Services
 {
@@ -16,43 +17,43 @@ namespace SalesWebMVC.Services
             _context = context;
         }
 
-        public List<Seller> FindAll()
+        public async Task<List<Seller>> FindAllAsync()
         {
-            return _context.Seller.ToList();
+            return await _context.Seller.ToListAsync();
         }
 
-        public List<Seller> FindAllWithRelations()
+        public async Task<List<Seller>> FindAllWithRelationsAsync()
         {
-            return _context.Seller.Include("Department").ToList();
+            return await _context.Seller.Include("Department").ToListAsync();
         }
 
-        public void Insert(Seller seller)
+        public async Task InsertAsync(Seller seller)
         {
             _context.Add(seller);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public Seller FindById(int sellerId)
+        public async Task<Seller> FindByIdAsync(int sellerId)
         {
             //TODO LANÇAR EXCEÇÃO DEPOIS...
-            return _context.Seller.Include("Department")
-                .FirstOrDefault(seller => seller.Id == sellerId);
+            return await _context.Seller.Include("Department")
+                .FirstOrDefaultAsync(seller => seller.Id == sellerId);
         }
 
-        public void Remove(int sellerId)
+        public async Task RemoveAsync(int sellerId)
         {
-            Seller seller = FindById(sellerId);
+            Seller seller = await FindByIdAsync(sellerId);
 
             List<SalesRecord> sales = _context.SalesRecord.ToList();
             _context.SalesRecord.RemoveRange(sales);
 
             _context.Seller.Remove(seller);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Update(Seller seller)
+        public async Task UpdateAsync(Seller seller)
         {
-            bool sellerExists = _context.Seller.Any(obj => obj.Id == seller.Id);
+            bool sellerExists = await _context.Seller.AnyAsync(obj => obj.Id == seller.Id);
 
             if (!sellerExists)
             {
@@ -62,7 +63,7 @@ namespace SalesWebMVC.Services
             try
             {
                 _context.Update(seller);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             } catch(DbUpdateConcurrencyException e)
             {
                 throw new DbConcurrencyException(e.Message);
