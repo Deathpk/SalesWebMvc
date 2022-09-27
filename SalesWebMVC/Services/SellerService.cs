@@ -42,13 +42,19 @@ namespace SalesWebMVC.Services
 
         public async Task RemoveAsync(int sellerId)
         {
-            Seller seller = await FindByIdAsync(sellerId);
+            try
+            {
+                Seller seller = await FindByIdAsync(sellerId);
 
-            List<SalesRecord> sales = _context.SalesRecord.ToList();
-            _context.SalesRecord.RemoveRange(sales);
+                List<SalesRecord> sales = _context.SalesRecord.ToList();
+                _context.SalesRecord.RemoveRange(sales);
 
-            _context.Seller.Remove(seller);
-            await _context.SaveChangesAsync();
+                _context.Seller.Remove(seller);
+                await _context.SaveChangesAsync();
+            } catch(DbUpdateException)
+            {
+                throw new IntegrityException("An error ocurred while deleting the seller.");
+            }
         }
 
         public async Task UpdateAsync(Seller seller)
